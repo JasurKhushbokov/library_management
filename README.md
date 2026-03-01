@@ -252,3 +252,13 @@ NGINX_PORT=80
 ## License
 
 This project is for educational purposes.
+<img width="1280" height="795" alt="image" src="https://github.com/user-attachments/assets/312cbd3b-fcdd-42a0-9536-dc5da98aa482" />
+<img width="1280" height="756" alt="image" src="https://github.com/user-attachments/assets/f286c7e7-ec35-4ee0-b57f-700de918bbf1" />
+<img width="518" height="402" alt="image" src="https://github.com/user-attachments/assets/9694a28e-e932-4a21-bd9a-4f3ffd038fa0" />
+<img width="1280" height="534" alt="image" src="https://github.com/user-attachments/assets/5fbe5961-3386-41f4-8018-9fa2476c8bad" />
+
+
+
+
+
+
