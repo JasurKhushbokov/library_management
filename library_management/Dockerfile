@@ -45,8 +45,8 @@ RUN mkdir -p /opt/django /var/log/django /var/static /var/media
 COPY --from=builder /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-# Copy project files
-COPY --chown=appuser:appgroup library_management/ /opt/django/
+# Copy project files (manage.py, requirements.txt, templates, etc.)
+COPY --chown=appuser:appgroup . /opt/django/
 
 # Set working directory
 WORKDIR /opt/django
