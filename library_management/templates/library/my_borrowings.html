@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}My Borrowings - Library Management System{% endblock %}
+
+{% block content %}
+<h1>My Borrowings</h1>
+
+<table>
+    <thead>
+        <tr>
+            <th>Book</th>
+            <th>Borrowed Date</th>
+            <th>Due Date</th>
+            <th>Returned Date</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for record in records %}
+            <tr>
+                <td><a href="{% url 'book_detail' record.book.pk %}">{{ record.book.title }}</a></td>
+                <td>{{ record.borrowed_at|date:"M d, Y" }}</td>
+                <td>{{ record.due_date|date:"M d, Y" }}</td>
+                <td>{{ record.returned_at|date:"M d, Y"|default:"-" }}</td>
+                <td>
+                    <span class="{% if record.status == 'borrowed' %}available{% elif record.status == 'returned' %}unavailable{% else %}unavailable{% endif %}">
+                        {{ record.get_status_display }}
+                    </span>
+                </td>
+                <td>
+                    {% if record.status == 'borrowed' %}
+                        <a href="{% url 'return_book' record.pk %}" class="btn btn-success" style="font-size: 0.8rem;">Return</a>
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="6">No borrowings yet.</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<p style="margin-top: 1rem;"><a href="{% url 'home' %}">&larr; Back to Home</a></p>
+{% endblock %}

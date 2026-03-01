@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Categories - Library Management System{% endblock %}
+
+{% block content %}
+<h1>All Categories</h1>
+
+{% if user.is_superuser %}
+    <a href="{% url 'category_create' %}" class="btn" style="margin-bottom: 1rem;">Add New Category</a>
+{% endif %}
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Number of Books</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for category in categories %}
+            <tr>
+                <td><a href="{% url 'category_detail' category.pk %}">{{ category.name }}</a></td>
+                <td>{{ category.books.count }}</td>
+                <td>
+                    {% if user.is_superuser %}
+                        <a href="{% url 'category_update' category.pk %}" class="btn" style="font-size: 0.8rem;">Edit</a>
+                        <a href="{% url 'category_delete' category.pk %}" class="btn btn-danger" style="font-size: 0.8rem;">Delete</a>
+                    {% endif %}
+                </td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="3">No categories available yet.</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

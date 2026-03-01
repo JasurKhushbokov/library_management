@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}My Wishlist - Library Management System{% endblock %}
+
+{% block content %}
+<h1>My Wishlist</h1>
+
+{% if books %}
+    <div class="book-grid">
+        {% for book in books %}
+            <div class="book-card">
+                {% if book.cover_image %}
+                    <a href="{% url 'book_detail' book.pk %}">
+                        <img src="{{ book.cover_image.url }}" alt="{{ book.title }}">
+                    </a>
+                {% else %}
+                    <div style="width: 100%; height: 200px; background: #ecf0f1; display: flex; align-items: center; justify-content: center;">
+                        <span style="color: #95a5a6;">No Cover</span>
+                    </div>
+                {% endif %}
+                <div class="book-card-content">
+                    <h3><a href="{% url 'book_detail' book.pk %}" style="color: inherit; text-decoration: none;">{{ book.title }}</a></h3>
+                    <p class="author">by {{ book.author.name }}</p>
+                    <p class="{% if book.available_copies > 0 %}available{% else %}unavailable{% endif %}">
+                        {{ book.available_copies }} available
+                    </p>
+                    <div class="actions" style="margin-top: 0.5rem;">
+                        {% if book.available_copies > 0 %}
+                            <a href="{% url 'borrow_book' book.pk %}" class="btn btn-success" style="font-size: 0.8rem;">Borrow</a>
+                        {% endif %}
+                        <a href="{% url 'remove_from_wishlist' book.pk %}" class="btn btn-danger" style="font-size: 0.8rem;">Remove</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <p>Your wishlist is empty. <a href="{% url 'book_list' %}">Browse books</a> to add some!</p>
+{% endif %}
+
+<p style="margin-top: 1rem;"><a href="{% url 'home' %}">&larr; Back to Home</a></p>
+{% endblock %}

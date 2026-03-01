@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ action }} Author - Library Management System{% endblock %}
+
+{% block content %}
+<h1>{{ action }} Author</h1>
+
+<form method="post" class="card">
+    {% csrf_token %}
+    
+    <div class="form-group">
+        <label for="id_name">Name</label>
+        {{ form.name }}
+        {% if form.name.errors %}
+            <ul class="errorlist">
+            {% for error in form.name.errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div class="form-group">
+        <label for="id_date_of_birth">Date of Birth</label>
+        {{ form.date_of_birth }}
+    </div>
+    
+    <div class="form-group">
+        <label for="id_biography">Biography</label>
+        {{ form.biography }}
+    </div>
+    
+    <button type="submit" class="btn">{{ action }} Author</button>
+    <a href="{% url 'author_list' %}" class="btn" style="background-color: #95a5a6;">Cancel</a>
+</form>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ action }} Book - Library Management System{% endblock %}
+
+{% block content %}
+<h1>{{ action }} Book</h1>
+
+<form method="post" enctype="multipart/form-data" class="card">
+    {% csrf_token %}
+    
+    <div class="form-group">
+        <label for="id_title">Title</label>
+        {{ form.title }}
+        {% if form.title.errors %}
+            <ul class="errorlist">
+            {% for error in form.title.errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div class="form-group">
+        <label for="id_isbn">ISBN</label>
+        {{ form.isbn }}
+        {% if form.isbn.errors %}
+            <ul class="errorlist">
+            {% for error in form.isbn.errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div class="form-group">
+        <label for="id_author">Author</label>
+        {{ form.author }}
+        {% if form.author.errors %}
+            <ul class="errorlist">
+            {% for error in form.author.errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div class="form-group">
+        <label for="id_published_date">Published Date</label>
+        {{ form.published_date }}
+    </div>
+    
+    <div class="form-group">
+        <label for="id_description">Description</label>
+        {{ form.description }}
+    </div>
+    
+    <div class="form-group">
+        <label for="id_cover_image">Cover Image</label>
+        {{ form.cover_image }}
+    </div>
+    
+    <div class="form-group">
+        <label for="id_available_copies">Available Copies</label>
+        {{ form.available_copies }}
+    </div>
+    
+    <div class="form-group">
+        <label for="id_categories">Categories</label>
+        {{ form.categories }}
+    </div>
+    
+    <button type="submit" class="btn">{{ action }} Book</button>
+    <a href="{% url 'book_list' %}" class="btn" style="background-color: #95a5a6;">Cancel</a>
+</form>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}Authors - Library Management System{% endblock %}
+
+{% block content %}
+<h1>All Authors</h1>
+
+{% if user.is_superuser %}
+    <a href="{% url 'author_create' %}" class="btn" style="margin-bottom: 1rem;">Add New Author</a>
+{% endif %}
+
+<div class="authors-grid">
+    {% for author in authors %}
+        <div class="author-card">
+            <h3><a href="{% url 'author_detail' author.pk %}" style="color: inherit; text-decoration: none;">{{ author.name }}</a></h3>
+            <p style="color: #7f8c8d;">{{ author.books.count }} book(s)</p>
+            {% if author.date_of_birth %}
+                <p>Born: {{ author.date_of_birth }}</p>
+            {% endif %}
+            {% if user.is_superuser %}
+                <div class="actions">
+                    <a href="{% url 'author_update' author.pk %}" class="btn" style="font-size: 0.8rem;">Edit</a>
+                    <a href="{% url 'author_delete' author.pk %}" class="btn btn-danger" style="font-size: 0.8rem;">Delete</a>
+                </div>
+            {% endif %}
+        </div>
+    {% empty %}
+        <p>No authors available yet.</p>
+    {% endfor %}
+</div>
+{% endblock %}

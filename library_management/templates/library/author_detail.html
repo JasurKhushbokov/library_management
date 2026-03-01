@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ author.name }} - Library Management System{% endblock %}
+
+{% block content %}
+<h1>{{ author.name }}</h1>
+
+<div class="card">
+    {% if author.date_of_birth %}
+        <p><strong>Date of Birth:</strong> {{ author.date_of_birth }}</p>
+    {% endif %}
+    
+    {% if author.biography %}
+        <p><strong>Biography:</strong></p>
+        <p>{{ author.biography }}</p>
+    {% endif %}
+    
+    {% if user.is_superuser %}
+        <div class="actions">
+            <a href="{% url 'author_update' author.pk %}" class="btn">Edit</a>
+            <a href="{% url 'author_delete' author.pk %}" class="btn btn-danger">Delete</a>
+        </div>
+    {% endif %}
+</div>
+
+<h2>Books by {{ author.name }}</h2>
+<div class="book-grid">
+    {% for book in books %}
+        <div class="book-card">
+            {% if book.cover_image %}
+                <a href="{% url 'book_detail' book.pk %}">
+                    <img src="{{ book.cover_image.url }}" alt="{{ book.title }}">
+                </a>
+            {% else %}
+                <div style="width: 100%; height: 200px; background: #ecf0f1; display: flex; align-items: center; justify-content: center;">
+                    <span style="color: #95a5a6;">No Cover</span>
+                </div>
+            {% endif %}
+            <div class="book-card-content">
+                <h3><a href="{% url 'book_detail' book.pk %}" style="color: inherit; text-decoration: none;">{{ book.title }}</a></h3>
+                <p class="{% if book.available_copies > 0 %}available{% else %}unavailable{% endif %}">
+                    {{ book.available_copies }} available
+                </p>
+            </div>
+        </div>
+    {% empty %}
+        <p>No books by this author yet.</p>
+    {% endfor %}
+</div>
+
+<p style="margin-top: 1rem;"><a href="{% url 'author_list' %}">&larr; Back to Authors</a></p>
+{% endblock %}

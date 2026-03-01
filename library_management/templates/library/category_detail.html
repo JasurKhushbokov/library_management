@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ category.name }} - Library Management System{% endblock %}
+
+{% block content %}
+<h1>{{ category.name }}</h1>
+
+<div class="card">
+    {% if category.description %}
+        <p><strong>Description:</strong> {{ category.description }}</p>
+    {% endif %}
+    
+    {% if user.is_superuser %}
+        <div class="actions">
+            <a href="{% url 'category_update' category.pk %}" class="btn">Edit</a>
+            <a href="{% url 'category_delete' category.pk %}" class="btn btn-danger">Delete</a>
+        </div>
+    {% endif %}
+</div>
+
+<h2>Books in {{ category.name }}</h2>
+<div class="book-grid">
+    {% for book in books %}
+        <div class="book-card">
+            {% if book.cover_image %}
+                <a href="{% url 'book_detail' book.pk %}">
+                    <img src="{{ book.cover_image.url }}" alt="{{ book.title }}">
+                </a>
+            {% else %}
+                <div style="width: 100%; height: 200px; background: #ecf0f1; display: flex; align-items: center; justify-content: center;">
+                    <span style="color: #95a5a6;">No Cover</span>
+                </div>
+            {% endif %}
+            <div class="book-card-content">
+                <h3><a href="{% url 'book_detail' book.pk %}" style="color: inherit; text-decoration: none;">{{ book.title }}</a></h3>
+                <p class="author">by {{ book.author.name }}</p>
+                <p class="{% if book.available_copies > 0 %}available{% else %}unavailable{% endif %}">
+                    {{ book.available_copies }} available
+                </p>
+            </div>
+        </div>
+    {% empty %}
+        <p>No books in this category yet.</p>
+    {% endfor %}
+</div>
+
+<p style="margin-top: 1rem;"><a href="{% url 'category_list' %}">&larr; Back to Categories</a></p>
+{% endblock %}

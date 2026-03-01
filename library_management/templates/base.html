@@ -1,0 +1,54 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Library Management System{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="{% url 'home' %}" class="logo">Library</a>
+            <ul class="nav-menu">
+                <li><a href="{% url 'book_list' %}">Books</a></li>
+                {% if user.is_superuser %}
+                    <li><a href="{% url 'author_list' %}">Authors</a></li>
+                    <li><a href="{% url 'category_list' %}">Categories</a></li>
+                {% endif %}
+                {% if user.is_authenticated %}
+                    <li><a href="{% url 'my_borrowings' %}">My Borrowings</a></li>
+                    <li><a href="{% url 'wishlist' %}">Wishlist</a></li>
+                    {% if user.is_superuser %}
+                        <li><a href="/admin/">Admin</a></li>
+                    {% endif %}
+                    <li><span class="user-greeting">Hello, {{ user.username }}</span></li>
+                    <li><a href="{% url 'logout' %}">Logout</a></li>
+                {% else %}
+                    <li><a href="{% url 'login' %}">Login</a></li>
+                    <li><a href="{% url 'register' %}">Register</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container main-content">
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Library Management System</p>
+        </div>
+    </footer>
+</body>
+</html>
