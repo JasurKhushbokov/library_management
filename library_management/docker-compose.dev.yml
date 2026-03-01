@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  # =============================================================================
+  # Django Web Application (Development)
+  # =============================================================================
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: library_web_dev
+    command: python manage.py runserver 0.0.0.0:8000
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=db
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DEBUG=True
+    volumes:
+      - .:/opt/django
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - library_network
+
+  # =============================================================================
+  # PostgreSQL Database
+  # =============================================================================
+  db:
+    image: postgres:16-alpine
+    container_name: library_db_dev
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+    networks:
+      - library_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+# =============================================================================
+# Networks
+# =============================================================================
+networks:
+  library_network:
+    driver: bridge
+
+# =============================================================================
+# Volumes
+# =============================================================================
+volumes:
+  postgres_data_dev:
