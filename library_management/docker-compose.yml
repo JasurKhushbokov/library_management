@@ -1,0 +1,85 @@
+version: '3.8'
+
+services:
+  # =============================================================================
+  # Django Web Application
+  # =============================================================================
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: library_web
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=db
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - static_files:/opt/django/staticfiles
+      - media_files:/opt/django/media
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - library_network
+    expose:
+      - "8000"
+
+  # =============================================================================
+  # PostgreSQL Database
+  # =============================================================================
+  db:
+    image: postgres:16-alpine
+    container_name: library_db
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - library_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # =============================================================================
+  # Nginx Reverse Proxy
+  # =============================================================================
+  nginx:
+    image: nginx:alpine
+    container_name: library_nginx
+    restart: unless-stopped
+    ports:
+      - "${NGINX_PORT:-80}:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - static_files:/var/static:ro
+      - media_files:/var/media:ro
+    depends_on:
+      - web
+    networks:
+      - library_network
+
+# =============================================================================
+# Networks
+# =============================================================================
+networks:
+  library_network:
+    driver: bridge
+
+# =============================================================================
+# Volumes
+# =============================================================================
+volumes:
+  postgres_data:
+  static_files:
+  media_files:
