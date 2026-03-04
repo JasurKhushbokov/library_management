@@ -157,7 +157,24 @@ jobs:
         with:
           name: docker-image
 
-      # Step 3: Set up SSH key for Azure VM access
+      # Step 3: Validate required secrets are set
+      - name: Validate secrets
+        run: |
+          if [ -z "${{ secrets.AZURE_VM_IP }}" ]; then
+            echo "::error::AZURE_VM_IP secret is not set. Go to Settings > Secrets > Actions to add it."
+            exit 1
+          fi
+          if [ -z "${{ secrets.AZURE_VM_USER }}" ]; then
+            echo "::error::AZURE_VM_USER secret is not set. Go to Settings > Secrets > Actions to add it."
+            exit 1
+          fi
+          if [ -z "${{ secrets.AZURE_SSH_KEY }}" ]; then
+            echo "::error::AZURE_SSH_KEY secret is not set. Go to Settings > Secrets > Actions to add it."
+            exit 1
+          fi
+          echo "All required secrets are configured."
+
+      # Step 4: Set up SSH key for Azure VM access
       - name: Set up SSH key
         run: |
           mkdir -p ~/.ssh
