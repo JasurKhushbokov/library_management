@@ -1,15 +1,10 @@
 services:
   # =============================================================================
-  # Django Web Application (Development)
+  # Django Web Application (Production)
   # =============================================================================
   web:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: library_web_dev
-    command: >
-      sh -c "python manage.py migrate &&
-             python manage.py runserver 0.0.0.0:8000"
+    image: library-app:latest
+    container_name: library_web
     restart: unless-stopped
     env_file:
       - .env
@@ -18,24 +13,24 @@ services:
       - DB_NAME=${DB_NAME}
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
-      - DEBUG=True
+      - DEBUG=False
     volumes:
-      - .:/opt/django
+      - static_files:/opt/django/staticfiles
       - ./media:/opt/django/media
-    ports:
-      - "8000:8000"
     depends_on:
       db:
         condition: service_healthy
     networks:
       - library_network
+    expose:
+      - "8000"
 
   # =============================================================================
   # PostgreSQL Database
   # =============================================================================
   db:
     image: postgres:16-alpine
-    container_name: library_db_dev
+    container_name: library_db
     restart: unless-stopped
     env_file:
       - .env
@@ -44,7 +39,7 @@ services:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
     volumes:
-      - postgres_data_dev:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - library_network
     healthcheck:
@@ -52,6 +47,24 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  # =============================================================================
+  # Nginx Reverse Proxy
+  # =============================================================================
+  nginx:
+    image: nginx:alpine
+    container_name: library_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./media:/var/media:ro
+      - static_files:/var/static:ro
+    depends_on:
+      - web
+    networks:
+      - library_network
 
 # =============================================================================
 # Networks
@@ -64,4 +77,5 @@ networks:
 # Volumes
 # =============================================================================
 volumes:
-  postgres_data_dev:
+  postgres_data:
+  static_files:

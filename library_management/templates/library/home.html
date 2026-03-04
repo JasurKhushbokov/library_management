@@ -5,59 +5,90 @@
 {% block content %}
 <div class="hero">
     <h1>Welcome to Library Management System</h1>
-    <p>Manage your books, authors, and borrowings with ease</p>
+    <p>Discover, borrow, and manage your favorite books with ease — v2.0 CI/CD Deployed</p>
 </div>
 
 <div class="stats">
     <div class="stat-card">
         <div class="number">{{ books.count }}</div>
-        <div>Books</div>
+        <div class="label">Books</div>
     </div>
     <div class="stat-card">
         <div class="number">{{ authors.count }}</div>
-        <div>Authors</div>
+        <div class="label">Authors</div>
     </div>
     <div class="stat-card">
         <div class="number">{{ categories.count }}</div>
-        <div>Categories</div>
+        <div class="label">Categories</div>
     </div>
 </div>
 
 <section class="section">
-    <h2>Recent Books</h2>
+    <div class="section-header">
+        <h2 class="section-title">Featured Books</h2>
+        <a href="{% url 'book_list' %}" class="btn btn-outline">View All Books</a>
+    </div>
     <div class="book-grid">
         {% for book in books %}
             <div class="book-card">
-                {% if book.cover_image %}
-                    <img src="{{ book.cover_image.url }}" alt="{{ book.title }}">
-                {% else %}
-                    <div style="width: 100%; height: 200px; background: #ecf0f1; display: flex; align-items: center; justify-content: center;">
-                        <span style="color: #95a5a6;">No Cover</span>
-                    </div>
-                {% endif %}
+                <div class="book-card-image">
+                    {% if book.cover_image %}
+                        <a href="{% url 'book_detail' book.pk %}">
+                            <img src="{{ book.cover_image.url }}" alt="{{ book.title }}">
+                        </a>
+                    {% else %}
+                        <div class="book-card-no-cover">📖</div>
+                    {% endif %}
+                </div>
                 <div class="book-card-content">
-                    <h3><a href="{% url 'book_detail' book.pk %}" style="color: inherit; text-decoration: none;">{{ book.title }}</a></h3>
-                    <p class="author">by {{ book.author.name }}</p>
-                    <p class="{% if book.available_copies > 0 %}available{% else %}unavailable{% endif %}">
-                        {{ book.available_copies }} available
+                    <h3 class="book-card-title">
+                        <a href="{% url 'book_detail' book.pk %}">{{ book.title }}</a>
+                    </h3>
+                    <p class="book-card-author">
+                        by <a href="{% url 'author_detail' book.author.pk %}">{{ book.author.name }}</a>
                     </p>
+                    <div class="book-card-meta">
+                        {% if book.available_copies > 0 %}
+                            <span class="badge badge-success">{{ book.available_copies }} available</span>
+                        {% else %}
+                            <span class="badge badge-danger">Unavailable</span>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         {% empty %}
-            <p>No books available yet.</p>
+            <div class="empty-state" style="grid-column: 1 / -1;">
+                <div class="empty-state-icon">📚</div>
+                <h3>No books available yet</h3>
+                <p>Check back soon for our collection!</p>
+            </div>
         {% endfor %}
     </div>
-    <p style="margin-top: 1rem;"><a href="{% url 'book_list' %}">View all books &rarr;</a></p>
 </section>
 
 <section class="section">
-    <h2>Browse by Category</h2>
+    <div class="section-header">
+        <h2 class="section-title">Browse by Category</h2>
+    </div>
     <div class="categories-grid">
         {% for category in categories %}
-            <a href="{% url 'category_detail' category.pk %}" class="category-tag">{{ category.name }}</a>
+            <a href="{% url 'category_detail' category.pk %}" class="category-tag">
+                {{ category.name }}
+            </a>
         {% empty %}
             <p>No categories available yet.</p>
         {% endfor %}
     </div>
 </section>
+
+{% if not user.is_authenticated %}
+<section class="section" style="text-align: center; padding: 2rem; background: white; border-radius: var(--radius); box-shadow: var(--shadow);">
+    <h2>Join Our Library</h2>
+    <p style="max-width: 500px; margin: 0 auto 1.5rem;">Create an account to borrow books, build your wishlist, and track your reading journey.</p>
+    <div style="display: flex; gap: 1rem; justify-content: center;">
+        <a href="{% url 'register' %}" class="btn btn-primary btn-lg">Register Now</a>
+        <a href="{% url 'login' %}" class="btn btn-outline btn-lg">Login</a>
+    </div>
+</section>
+{% endif %}
 {% endblock %}

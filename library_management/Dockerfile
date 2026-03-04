@@ -1,7 +1,7 @@
 # =============================================================================
 # Stage 1: Builder - Install dependencies
 # =============================================================================
-FROM python:3.12-slim as builder
+FROM python:3.12-slim AS builder
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -69,11 +69,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 
 # Run database migrations and start Gunicorn
 # Using gunicorn with multiple workers for production
-CMD python manage.py migrate --noinput && \
-    python manage.py collectstatic --noinput --clear && \
-    gunicorn library_management.wsgi:application \
-    --bind 0.0.0.0:8000 \
-    --workers 2 \
-    --timeout 120 \
-    --access-logfile - \
-    --error-logfile -
+CMD ["sh", "-c", "python manage.py migrate --noinput && python manage.py collectstatic --noinput --clear && gunicorn library_management.wsgi:application --bind 0.0.0.0:8000 --workers 2 --timeout 120 --access-logfile - --error-logfile -"]

@@ -3,53 +3,64 @@
 {% block title %}{{ book.title }} - Library Management System{% endblock %}
 
 {% block content %}
-<h1>{{ book.title }}</h1>
+<div class="page-header">
+    <h1>{{ book.title }}</h1>
+    <a href="{% url 'book_list' %}" class="btn btn-outline">← Back to Books</a>
+</div>
 
-<div class="detail-header">
-    {% if book.cover_image %}
-        <img src="{{ book.cover_image.url }}" alt="{{ book.title }}" class="detail-image">
-    {% else %}
-        <div class="detail-image" style="display: flex; align-items: center; justify-content: center;">
-            <span style="color: #95a5a6;">No Cover</span>
-        </div>
-    {% endif %}
-    
-    <div class="detail-info">
-        <p><strong>Author:</strong> <a href="{% url 'author_detail' book.author.pk %}">{{ book.author.name }}</a></p>
-        <p><strong>ISBN:</strong> {{ book.isbn }}</p>
-        <p><strong>Published Date:</strong> {{ book.published_date|default:"N/A" }}</p>
-        <p><strong>Available Copies:</strong> <span class="{% if book.available_copies > 0 %}available{% else %}unavailable{% endif %}">{{ book.available_copies }}</span></p>
-        
-        <p><strong>Categories:</strong></p>
-        <div class="categories-grid">
-            {% for cat in book.categories.all %}
-                <a href="{% url 'category_detail' cat.pk %}" class="category-tag">{{ cat.name }}</a>
-            {% endfor %}
-        </div>
-        
-        {% if book.description %}
-            <p style="margin-top: 1rem;"><strong>Description:</strong></p>
-            <p>{{ book.description }}</p>
-        {% endif %}
-        
-        <div class="actions">
-            {% if user.is_authenticated and book.available_copies > 0 %}
-                <a href="{% url 'borrow_book' book.pk %}" class="btn btn-success">Borrow Book</a>
+<div class="card">
+    <div class="card-body">
+        <div class="detail-header">
+            {% if book.cover_image %}
+                <img src="{{ book.cover_image.url }}" alt="{{ book.title }}" class="detail-image">
+            {% else %}
+                <div class="detail-image-placeholder">📖</div>
             {% endif %}
             
-            {% if user.is_authenticated %}
-                {% if book in wishlist_books %}
-                    <a href="{% url 'remove_from_wishlist' book.pk %}" class="btn btn-danger">Remove from Wishlist</a>
-                {% else %}
-                    <a href="{% url 'add_to_wishlist' book.pk %}" class="btn">Add to Wishlist</a>
+            <div class="detail-info">
+                <p><strong>Author:</strong> <a href="{% url 'author_detail' book.author.pk %}">{{ book.author.name }}</a></p>
+                <p><strong>ISBN:</strong> {{ book.isbn }}</p>
+                <p><strong>Published Date:</strong> {{ book.published_date|default:"N/A" }}</p>
+                <p>
+                    <strong>Available Copies:</strong> 
+                    {% if book.available_copies > 0 %}
+                        <span class="badge badge-success">{{ book.available_copies }} available</span>
+                    {% else %}
+                        <span class="badge badge-danger">Not available</span>
+                    {% endif %}
+                </p>
+                
+                <p><strong>Categories:</strong></p>
+                <div class="categories-grid">
+                    {% for cat in book.categories.all %}
+                        <a href="{% url 'category_detail' cat.pk %}" class="category-tag">{{ cat.name }}</a>
+                    {% endfor %}
+                </div>
+                
+                {% if book.description %}
+                    <p style="margin-top: 1.5rem;"><strong>Description:</strong></p>
+                    <p style="line-height: 1.8;">{{ book.description }}</p>
                 {% endif %}
-            {% endif %}
-            
-            {% if user.is_superuser %}
-                <a href="{% url 'book_update' book.pk %}" class="btn">Edit</a>
-                <a href="{% url 'book_delete' book.pk %}" class="btn btn-danger">Delete</a>
-            {% endif %}
-            <a href="{% url 'book_list' %}" class="btn" style="background-color: #95a5a6;">Back to List</a>
+                
+                <div class="actions">
+                    {% if user.is_authenticated and book.available_copies > 0 %}
+                        <a href="{% url 'borrow_book' book.pk %}" class="btn btn-success btn-lg">📖 Borrow Book</a>
+                    {% endif %}
+                    
+                    {% if user.is_authenticated %}
+                        {% if book in wishlist_books %}
+                            <a href="{% url 'remove_from_wishlist' book.pk %}" class="btn btn-danger">❤️ Remove from Wishlist</a>
+                        {% else %}
+                            <a href="{% url 'add_to_wishlist' book.pk %}" class="btn btn-outline">🤍 Add to Wishlist</a>
+                        {% endif %}
+                    {% endif %}
+                    
+                    {% if user.is_superuser %}
+                        <a href="{% url 'book_update' book.pk %}" class="btn btn-primary">✏️ Edit</a>
+                        <a href="{% url 'book_delete' book.pk %}" class="btn btn-danger">🗑️ Delete</a>
+                    {% endif %}
+                </div>
+            </div>
         </div>
     </div>
 </div>
