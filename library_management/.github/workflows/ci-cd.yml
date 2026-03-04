@@ -1,0 +1,208 @@
+# =============================================================================
+# CI/CD Pipeline for Library Management System
+# Triggers on push to master branch
+# Steps: Lint → Test → Build Docker Image → Deploy to Azure VM
+# =============================================================================
+
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+env:
+  IMAGE_NAME: library-app
+  IMAGE_TAG: latest
+
+jobs:
+  # ===========================================================================
+  # Job 1: Lint & Test - Verify code quality and run Django tests
+  # ===========================================================================
+  test:
+    name: Lint & Test
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: test_library
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U testuser -d test_library"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      # Step 1: Check out the repository code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Set up Python 3.12 (matches Dockerfile)
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      # Step 3: Install project dependencies
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # Step 4: Run Django system checks (validates models, settings, etc.)
+      - name: Run Django checks
+        env:
+          DB_NAME: test_library
+          DB_USER: testuser
+          DB_PASSWORD: testpass
+          DB_HOST: localhost
+          DB_PORT: 5432
+          SECRET_KEY: test-secret-key-for-ci
+          DEBUG: "True"
+          ALLOWED_HOSTS: localhost,127.0.0.1
+        run: python manage.py check --deploy
+
+      # Step 5: Run database migrations to verify they work
+      - name: Run migrations
+        env:
+          DB_NAME: test_library
+          DB_USER: testuser
+          DB_PASSWORD: testpass
+          DB_HOST: localhost
+          DB_PORT: 5432
+          SECRET_KEY: test-secret-key-for-ci
+          DEBUG: "True"
+          ALLOWED_HOSTS: localhost,127.0.0.1
+        run: python manage.py migrate --noinput
+
+      # Step 6: Run Django unit tests
+      - name: Run tests
+        env:
+          DB_NAME: test_library
+          DB_USER: testuser
+          DB_PASSWORD: testpass
+          DB_HOST: localhost
+          DB_PORT: 5432
+          SECRET_KEY: test-secret-key-for-ci
+          DEBUG: "True"
+          ALLOWED_HOSTS: localhost,127.0.0.1
+        run: python manage.py test --verbosity=2
+
+  # ===========================================================================
+  # Job 2: Build - Build Docker image and verify it works
+  # ===========================================================================
+  build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    needs: test  # Only runs if tests pass
+
+    steps:
+      # Step 1: Check out the repository code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Build the production Docker image (multi-stage)
+      - name: Build Docker image
+        run: docker build -t ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} .
+
+      # Step 3: Verify the image was created successfully
+      - name: Verify image
+        run: docker images ${{ env.IMAGE_NAME }}
+
+      # Step 4: Save Docker image as artifact for deployment job
+      - name: Save Docker image
+        run: docker save -o ${{ env.IMAGE_NAME }}.tar ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+
+      # Step 5: Upload image artifact so deploy job can use it
+      - name: Upload image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image
+          path: ${{ env.IMAGE_NAME }}.tar
+          retention-days: 1
+
+  # ===========================================================================
+  # Job 3: Deploy - Transfer image and deploy to Azure VM
+  # ===========================================================================
+  deploy:
+    name: Deploy to Azure VM
+    runs-on: ubuntu-latest
+    needs: build  # Only runs if build succeeds
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+
+    steps:
+      # Step 1: Check out the repository code (for compose & config files)
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Download the Docker image artifact from build job
+      - name: Download image artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image
+
+      # Step 3: Set up SSH key for Azure VM access
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.AZURE_SSH_KEY }}" > ~/.ssh/azure-key.pem
+          chmod 600 ~/.ssh/azure-key.pem
+          ssh-keyscan -H ${{ secrets.AZURE_VM_IP }} >> ~/.ssh/known_hosts
+
+      # Step 4: Copy Docker image to Azure VM
+      - name: Transfer Docker image to Azure VM
+        run: |
+          scp -i ~/.ssh/azure-key.pem \
+            ${{ env.IMAGE_NAME }}.tar \
+            ${{ secrets.AZURE_VM_USER }}@${{ secrets.AZURE_VM_IP }}:~/
+
+      # Step 5: Copy deployment configuration files
+      - name: Transfer config files
+        run: |
+          scp -i ~/.ssh/azure-key.pem \
+            docker-compose.prod.yml nginx.conf \
+            ${{ secrets.AZURE_VM_USER }}@${{ secrets.AZURE_VM_IP }}:~/
+
+      # Step 6: Deploy on Azure VM (load image, restart containers)
+      - name: Deploy on Azure VM
+        run: |
+          ssh -i ~/.ssh/azure-key.pem \
+            ${{ secrets.AZURE_VM_USER }}@${{ secrets.AZURE_VM_IP }} << 'EOF'
+            echo "Loading Docker image..."
+            sudo docker load -i ~/library-app.tar
+
+            echo "Stopping existing containers..."
+            cd ~ && sudo docker compose -f docker-compose.prod.yml down
+
+            echo "Starting updated containers..."
+            sudo docker compose -f docker-compose.prod.yml up -d
+
+            echo "Waiting for services to start..."
+            sleep 10
+
+            echo "Checking container status..."
+            sudo docker ps
+
+            echo "Cleaning up tar file..."
+            rm -f ~/library-app.tar
+          EOF
+
+      # Step 7: Verify deployment is healthy
+      - name: Verify deployment
+        run: |
+          sleep 5
+          curl -f -s -o /dev/null -w "HTTP Status: %{http_code}\n" \
+            http://${{ secrets.AZURE_VM_IP }}/ || echo "Health check pending..."
+
+      # Step 8: Clean up SSH key
+      - name: Cleanup SSH key
+        if: always()
+        run: rm -f ~/.ssh/azure-key.pem

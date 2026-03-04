@@ -8,6 +8,8 @@ from django.utils import timezone
 from .models import Book, Author, Category, BorrowRecord, Wishlist
 from .forms import RegistrationForm, BookForm, AuthorForm, CategoryForm
 
+# CI/CD Pipeline: Auto-deployed via GitHub Actions
+
 
 def is_admin(user):
     return user.is_superuser

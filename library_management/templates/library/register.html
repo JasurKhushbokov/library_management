@@ -4,12 +4,12 @@
 
 {% block content %}
 <div class="auth-form">
-    <h2>Register</h2>
+    <h2>📝 Create Account</h2>
     <form method="post">
         {% csrf_token %}
         <div class="form-group">
             <label for="id_username">Username</label>
-            <input type="text" name="username" id="id_username" required>
+            <input type="text" name="username" id="id_username" class="form-control" placeholder="Choose a username" required>
             {% if form.username.errors %}
                 <ul class="errorlist">
                 {% for error in form.username.errors %}
@@ -20,7 +20,7 @@
         </div>
         <div class="form-group">
             <label for="id_email">Email</label>
-            <input type="email" name="email" id="id_email" required>
+            <input type="email" name="email" id="id_email" class="form-control" placeholder="Enter your email" required>
             {% if form.email.errors %}
                 <ul class="errorlist">
                 {% for error in form.email.errors %}
@@ -31,15 +31,15 @@
         </div>
         <div class="form-group">
             <label for="id_first_name">First Name</label>
-            <input type="text" name="first_name" id="id_first_name">
+            <input type="text" name="first_name" id="id_first_name" class="form-control" placeholder="Optional">
         </div>
         <div class="form-group">
             <label for="id_last_name">Last Name</label>
-            <input type="text" name="last_name" id="id_last_name">
+            <input type="text" name="last_name" id="id_last_name" class="form-control" placeholder="Optional">
         </div>
         <div class="form-group">
             <label for="id_password1">Password</label>
-            <input type="password" name="password1" id="id_password1" required>
+            <input type="password" name="password1" id="id_password1" class="form-control" placeholder="Create a password" required>
             {% if form.password1.errors %}
                 <ul class="errorlist">
                 {% for error in form.password1.errors %}
@@ -50,7 +50,7 @@
         </div>
         <div class="form-group">
             <label for="id_password2">Confirm Password</label>
-            <input type="password" name="password2" id="id_password2" required>
+            <input type="password" name="password2" id="id_password2" class="form-control" placeholder="Confirm your password" required>
             {% if form.password2.errors %}
                 <ul class="errorlist">
                 {% for error in form.password2.errors %}
@@ -59,10 +59,10 @@
                 </ul>
             {% endif %}
         </div>
-        <button type="submit" class="btn" style="width: 100%;">Register</button>
+        <button type="submit" class="btn btn-primary">Create Account</button>
     </form>
-    <p style="margin-top: 1rem; text-align: center;">
-        Already have an account? <a href="{% url 'login' %}">Login</a>
-    </p>
+    <div class="auth-form-footer">
+        <p>Already have an account? <a href="{% url 'login' %}">Login here</a></p>
+    </div>
 </div>
 {% endblock %}
