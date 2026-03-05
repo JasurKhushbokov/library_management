@@ -9,10 +9,12 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# Install build dependencies
+# Install build dependencies (gcc + libpq for psycopg2, libjpeg/zlib for Pillow)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     libpq-dev \
+    libjpeg62-turbo-dev \
+    zlib1g-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Create virtual environment
@@ -45,14 +47,22 @@ RUN mkdir -p /opt/django /var/log/django /var/static /var/media
 COPY --from=builder /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
+# Install runtime dependencies for Pillow (JPEG/PNG) and psycopg2 (libpq)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libjpeg62-turbo \
+    libpng16-16 \
+    zlib1g \
+    libpq5 \
+    && rm -rf /var/lib/apt/lists/*
+
 # Copy project files (manage.py, requirements.txt, templates, etc.)
 COPY --chown=appuser:appgroup . /opt/django/
 
 # Set working directory
 WORKDIR /opt/django
 
-# Create static and media directories
-RUN mkdir -p /opt/django/staticfiles /opt/django/media
+# Create static and media directories (including covers subdirectory)
+RUN mkdir -p /opt/django/staticfiles /opt/django/media/covers
 
 # Change ownership to non-root user
 RUN chown -R appuser:appgroup /opt/django /var/static /var/media /var/log/django
@@ -69,4 +79,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 
 # Run database migrations and start Gunicorn
 # Using gunicorn with multiple workers for production
-CMD ["sh", "-c", "python manage.py migrate --noinput && python manage.py collectstatic --noinput --clear && gunicorn library_management.wsgi:application --bind 0.0.0.0:8000 --workers 2 --timeout 120 --access-logfile - --error-logfile -"]
+# mkdir -p ensures media/covers dir exists even with bind mounts
+CMD ["sh", "-c", "mkdir -p /opt/django/media/covers && python manage.py migrate --noinput && python manage.py collectstatic --noinput --clear && gunicorn library_management.wsgi:application --bind 0.0.0.0:8000 --workers 2 --timeout 120 --access-logfile - --error-logfile -"]
