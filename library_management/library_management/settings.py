@@ -113,6 +113,10 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "home"
 
+# Required for HTTPS behind Nginx reverse proxy
+# Without this, Django thinks all requests are HTTP
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
 # =============================================================================
 # Logging Configuration — ensures errors are visible in console/Docker logs
 # even when DEBUG=False
@@ -128,7 +132,7 @@ LOGGING = {
     },
     "handlers": {
         "console": {
-            "level": "ERROR",
+            "level": "WARNING",
             "class": "logging.StreamHandler",
             "formatter": "verbose",
         },
@@ -136,7 +140,7 @@ LOGGING = {
     "loggers": {
         "django": {
             "handlers": ["console"],
-            "level": "ERROR",
+            "level": "WARNING",
             "propagate": True,
         },
         "django.request": {

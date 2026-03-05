@@ -75,11 +75,14 @@ class BookAdmin(admin.ModelAdmin):
     )
 
     def cover_thumbnail(self, obj):
-        if obj.cover_image:
-            return format_html(
-                '<img src="{}" style="width: 50px; height: 70px; object-fit: cover; border-radius: 4px;">',
-                obj.cover_image.url,
-            )
+        try:
+            if obj.cover_image:
+                return format_html(
+                    '<img src="{}" style="width: 50px; height: 70px; object-fit: cover; border-radius: 4px;">',
+                    obj.cover_image.url,
+                )
+        except Exception:
+            return "(error)"
         return "-"
 
     cover_thumbnail.short_description = "Cover"

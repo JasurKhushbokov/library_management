@@ -67,8 +67,10 @@ RUN mkdir -p /opt/django/staticfiles /opt/django/media/covers
 # Change ownership to non-root user
 RUN chown -R appuser:appgroup /opt/django /var/static /var/media /var/log/django
 
-# Switch to non-root user
-USER appuser
+# NOTE: We do NOT use "USER appuser" here because bind-mounted
+# directories (e.g., ./media) are owned by the host user (UID 1000).
+# Instead, the CMD runs setup tasks as root (mkdir, chown, migrate),
+# then starts Gunicorn with --user/--group to drop privileges.
 
 # Expose port (Django/Gunicorn will run on this port)
 EXPOSE 8000
@@ -78,6 +80,8 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/')" || exit 1
 
 # Run database migrations and start Gunicorn
-# Using gunicorn with multiple workers for production
-# mkdir -p ensures media/covers dir exists even with bind mounts
-CMD ["sh", "-c", "mkdir -p /opt/django/media/covers && python manage.py migrate --noinput && python manage.py collectstatic --noinput --clear && gunicorn library_management.wsgi:application --bind 0.0.0.0:8000 --workers 2 --timeout 120 --access-logfile - --error-logfile -"]
+# 1. Create media/covers directory (handles bind mounts)
+# 2. Fix ownership so appuser can write uploaded files
+# 3. Run migrations and collectstatic as root
+# 4. Start Gunicorn, dropping privileges to appuser
+CMD ["sh", "-c", "mkdir -p /opt/django/media/covers && chown -R appuser:appgroup /opt/django/media && python manage.py migrate --noinput && python manage.py collectstatic --noinput --clear && gunicorn library_management.wsgi:application --bind 0.0.0.0:8000 --workers 2 --timeout 120 --user appuser --group appgroup --access-logfile - --error-logfile -"]
