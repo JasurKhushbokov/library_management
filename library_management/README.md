@@ -2,7 +2,7 @@
 
 **Student ID:** 00016171  
 **Module:** DSCC / DevOps & Software Continuous Delivery  
-**University:** Westminster International University in Tashkent  
+**University:** Westminster International University in Tashkent
 
 A full-stack Django-based Library Management System for managing books, authors, categories, and borrow records. The project features user authentication, book borrowing, wishlists, and is fully containerized with Docker. It is deployed to an Azure Virtual Machine via a CI/CD pipeline using GitHub Actions.
 
@@ -31,6 +31,7 @@ A full-stack Django-based Library Management System for managing books, authors,
 ## Features
 
 ### User Features
+
 - User registration and login/logout authentication
 - Browse books, authors, and categories
 - Search and filter books
@@ -40,11 +41,13 @@ A full-stack Django-based Library Management System for managing books, authors,
 - Add/remove books to/from a personal wishlist
 
 ### Admin Features
+
 - Full Django admin panel for content management
 - CRUD operations for books, authors, and categories
 - View and manage all borrow records
 
 ### Technical Features
+
 - Multi-stage Docker build (builder + production)
 - Non-root Docker container user for security
 - PostgreSQL database with health checks
@@ -58,19 +61,19 @@ A full-stack Django-based Library Management System for managing books, authors,
 
 ## Technologies Used
 
-| Category | Technology | Version |
-|---|---|---|
-| Backend Framework | Django | 5.2.4 |
-| Programming Language | Python | 3.12 |
-| Database | PostgreSQL | 16 (Alpine) |
-| WSGI Server | Gunicorn | 23.0.0 |
-| Reverse Proxy | Nginx | Alpine |
-| Containerization | Docker & Docker Compose | Latest |
-| CI/CD | GitHub Actions | v4 |
-| Cloud Platform | Microsoft Azure | VM (Ubuntu) |
-| Image Processing | Pillow | 12.1.1 |
-| Env Management | python-dotenv | 1.1.0 |
-| Database Adapter | psycopg2-binary | 2.9.11 |
+| Category             | Technology              | Version     |
+| -------------------- | ----------------------- | ----------- |
+| Backend Framework    | Django                  | 5.2.4       |
+| Programming Language | Python                  | 3.12        |
+| Database             | PostgreSQL              | 16 (Alpine) |
+| WSGI Server          | Gunicorn                | 23.0.0      |
+| Reverse Proxy        | Nginx                   | Alpine      |
+| Containerization     | Docker & Docker Compose | Latest      |
+| CI/CD                | GitHub Actions          | v4          |
+| Cloud Platform       | Microsoft Azure         | VM (Ubuntu) |
+| Image Processing     | Pillow                  | 12.1.1      |
+| Env Management       | python-dotenv           | 1.1.0       |
+| Database Adapter     | psycopg2-binary         | 2.9.11      |
 
 ---
 
@@ -215,64 +218,64 @@ DSCC_CW1_00016171/
 
 ### Model Details
 
-| Model | Field | Type | Constraints |
-|---|---|---|---|
-| **Author** | `name` | CharField(200) | Required |
-| | `biography` | TextField | Optional |
-| | `date_of_birth` | DateField | Optional |
-| **Category** | `name` | CharField(100) | Required |
-| | `description` | TextField | Optional |
-| **Book** | `title` | CharField(200) | Required |
-| | `isbn` | CharField(13) | Unique |
-| | `published_date` | DateField | Optional |
-| | `description` | TextField | Optional |
-| | `cover_image` | ImageField | Optional, uploads to `covers/` |
-| | `available_copies` | PositiveIntegerField | Default: 1 |
-| | `author` | ForeignKey → Author | CASCADE |
-| | `categories` | ManyToManyField → Category | |
-| **BorrowRecord** | `user` | ForeignKey → User | CASCADE |
-| | `book` | ForeignKey → Book | CASCADE |
-| | `borrowed_at` | DateTimeField | Auto-set on create |
-| | `due_date` | DateField | Required |
-| | `returned_at` | DateTimeField | Optional |
-| | `status` | CharField(20) | Choices: `borrowed`, `returned`, `overdue` |
-| **Wishlist** | `user` | OneToOneField → User | CASCADE |
-| | `books` | ManyToManyField → Book | |
-| | `created_at` | DateTimeField | Auto-set on create |
+| Model            | Field              | Type                       | Constraints                                |
+| ---------------- | ------------------ | -------------------------- | ------------------------------------------ |
+| **Author**       | `name`             | CharField(200)             | Required                                   |
+|                  | `biography`        | TextField                  | Optional                                   |
+|                  | `date_of_birth`    | DateField                  | Optional                                   |
+| **Category**     | `name`             | CharField(100)             | Required                                   |
+|                  | `description`      | TextField                  | Optional                                   |
+| **Book**         | `title`            | CharField(200)             | Required                                   |
+|                  | `isbn`             | CharField(13)              | Unique                                     |
+|                  | `published_date`   | DateField                  | Optional                                   |
+|                  | `description`      | TextField                  | Optional                                   |
+|                  | `cover_image`      | ImageField                 | Optional, uploads to `covers/`             |
+|                  | `available_copies` | PositiveIntegerField       | Default: 1                                 |
+|                  | `author`           | ForeignKey → Author        | CASCADE                                    |
+|                  | `categories`       | ManyToManyField → Category |                                            |
+| **BorrowRecord** | `user`             | ForeignKey → User          | CASCADE                                    |
+|                  | `book`             | ForeignKey → Book          | CASCADE                                    |
+|                  | `borrowed_at`      | DateTimeField              | Auto-set on create                         |
+|                  | `due_date`         | DateField                  | Required                                   |
+|                  | `returned_at`      | DateTimeField              | Optional                                   |
+|                  | `status`           | CharField(20)              | Choices: `borrowed`, `returned`, `overdue` |
+| **Wishlist**     | `user`             | OneToOneField → User       | CASCADE                                    |
+|                  | `books`            | ManyToManyField → Book     |                                            |
+|                  | `created_at`       | DateTimeField              | Auto-set on create                         |
 
 ---
 
 ## URL Endpoints
 
-| Endpoint | Method | Description | Access |
-|---|---|---|---|
-| `/` | GET | Home page with book stats and featured books | Public |
-| `/register/` | GET, POST | User registration | Public |
-| `/login/` | GET, POST | User login | Public |
-| `/logout/` | POST | User logout | Authenticated |
-| `/books/` | GET | Book catalog with search | Public |
-| `/books/<id>/` | GET | Book detail page | Public |
-| `/books/create/` | GET, POST | Add a new book | Admin only |
-| `/books/<id>/update/` | GET, POST | Edit a book | Admin only |
-| `/books/<id>/delete/` | GET, POST | Delete a book | Admin only |
-| `/books/<id>/borrow/` | POST | Borrow a book | Authenticated |
-| `/authors/` | GET | Author list | Public |
-| `/authors/<id>/` | GET | Author detail with their books | Public |
-| `/authors/create/` | GET, POST | Add a new author | Admin only |
-| `/authors/<id>/update/` | GET, POST | Edit an author | Admin only |
-| `/authors/<id>/delete/` | GET, POST | Delete an author | Admin only |
-| `/categories/` | GET | Category list | Public |
-| `/categories/<id>/` | GET | Category detail with books | Public |
-| `/categories/create/` | GET, POST | Add a new category | Admin only |
-| `/categories/<id>/update/` | GET, POST | Edit a category | Admin only |
-| `/categories/<id>/delete/` | GET, POST | Delete a category | Admin only |
-| `/my-borrowings/` | GET | User's borrowing history | Authenticated |
-| `/borrow/<id>/return/` | POST | Return a borrowed book | Authenticated |
-| `/wishlist/` | GET | User's wishlist | Authenticated |
-| `/wishlist/add/<id>/` | POST | Add book to wishlist | Authenticated |
-| `/wishlist/remove/<id>/` | POST | Remove book from wishlist | Authenticated |
-| `/health/` | GET | Health check endpoint (JSON) | Public |
-| `/admin/` | GET | Django admin panel | Staff only |
+| Endpoint                   | Method    | Description                                  | Access        |
+| -------------------------- | --------- | -------------------------------------------- | ------------- |
+| `/`                        | GET       | Home page with book stats and featured books | Public        |
+| `/register/`               | GET, POST | User registration                            | Public        |
+| `/login/`                  | GET, POST | User login                                   | Public        |
+| `/logout/`                 | POST      | User logout                                  | Authenticated |
+| `/books/`                  | GET       | Book catalog with search                     | Public        |
+| `/books/<id>/`             | GET       | Book detail page                             | Public        |
+| `/books/create/`           | GET, POST | Add a new book                               | Admin only    |
+| `/books/<id>/update/`      | GET, POST | Edit a book                                  | Admin only    |
+| `/books/<id>/delete/`      | GET, POST | Delete a book                                | Admin only    |
+| `/books/<id>/borrow/`      | POST      | Borrow a book                                | Authenticated |
+| `/authors/`                | GET       | Author list                                  | Public        |
+| `/authors/<id>/`           | GET       | Author detail with their books               | Public        |
+| `/authors/create/`         | GET, POST | Add a new author                             | Admin only    |
+| `/authors/<id>/update/`    | GET, POST | Edit an author                               | Admin only    |
+| `/authors/<id>/delete/`    | GET, POST | Delete an author                             | Admin only    |
+| `/categories/`             | GET       | Category list                                | Public        |
+| `/categories/<id>/`        | GET       | Category detail with books                   | Public        |
+| `/categories/create/`      | GET, POST | Add a new category                           | Admin only    |
+| `/categories/<id>/update/` | GET, POST | Edit a category                              | Admin only    |
+| `/categories/<id>/delete/` | GET, POST | Delete a category                            | Admin only    |
+| `/my-borrowings/`          | GET       | User's borrowing history                     | Authenticated |
+| `/borrow/<id>/return/`     | POST      | Return a borrowed book                       | Authenticated |
+| `/wishlist/`               | GET       | User's wishlist                              | Authenticated |
+| `/wishlist/add/<id>/`      | POST      | Add book to wishlist                         | Authenticated |
+| `/wishlist/remove/<id>/`   | POST      | Remove book from wishlist                    | Authenticated |
+| `/health/`                 | GET       | Health check endpoint (JSON)                 | Public        |
+| `/admin/`                  | GET       | Django admin panel                           | Staff only    |
 
 ---
 
@@ -287,12 +290,14 @@ DSCC_CW1_00016171/
 ### Option 1: Running Locally (without Docker)
 
 1. **Clone the repository:**
+
 ```bash
 git clone https://github.com/JasurKhushbokov/library_management.git
 cd library_management/library_management
 ```
 
 2. **Create and activate virtual environment:**
+
 ```bash
 python -m venv venv
 source venv/bin/activate        # Linux/Mac
@@ -300,27 +305,32 @@ venv\Scripts\activate           # Windows
 ```
 
 3. **Install dependencies:**
+
 ```bash
 pip install -r requirements.txt
 ```
 
 4. **Create environment file:**
+
 ```bash
 cp .env.example .env
 # Edit .env with your database credentials
 ```
 
 5. **Run database migrations:**
+
 ```bash
 python manage.py migrate
 ```
 
 6. **Create admin superuser:**
+
 ```bash
 python manage.py createsuperuser
 ```
 
 7. **Start the development server:**
+
 ```bash
 python manage.py runserver
 ```
@@ -381,9 +391,9 @@ docker-compose.prod.yml
 
 ### Dockerfile (Multi-Stage Build)
 
-| Stage | Purpose |
-|---|---|
-| **Stage 1: Builder** | Installs gcc, libpq-dev, creates venv, installs Python dependencies |
+| Stage                   | Purpose                                                                              |
+| ----------------------- | ------------------------------------------------------------------------------------ |
+| **Stage 1: Builder**    | Installs gcc, libpq-dev, creates venv, installs Python dependencies                  |
 | **Stage 2: Production** | Copies venv from builder, copies project files, creates non-root user, runs Gunicorn |
 
 ---
@@ -454,10 +464,10 @@ Only runs if Job 2 passes AND the push is to `master`:
 
 These must be configured in **Settings → Secrets and variables → Actions**:
 
-| Secret | Description | Example |
-|---|---|---|
-| `AZURE_VM_IP` | Public IP of the Azure VM | `135.235.139.102` |
-| `AZURE_VM_USER` | SSH username | `azureuser` |
+| Secret          | Description                           | Example                              |
+| --------------- | ------------------------------------- | ------------------------------------ |
+| `AZURE_VM_IP`   | Public IP of the Azure VM             | `135.235.139.102`                    |
+| `AZURE_VM_USER` | SSH username                          | `azureuser`                          |
 | `AZURE_SSH_KEY` | Contents of the SSH private key (PEM) | `-----BEGIN RSA PRIVATE KEY-----...` |
 
 ---
@@ -466,14 +476,14 @@ These must be configured in **Settings → Secrets and variables → Actions**:
 
 ### Infrastructure
 
-| Component | Details |
-|---|---|
-| Cloud Provider | Microsoft Azure |
-| VM Size | Standard B1s (1 vCPU, 1 GB RAM) |
-| OS | Ubuntu 24.04 LTS |
-| Public IP | 135.235.139.102 |
-| Open Ports | 22 (SSH), 80 (HTTP) |
-| Docker Engine | Installed on VM |
+| Component      | Details                         |
+| -------------- | ------------------------------- |
+| Cloud Provider | Microsoft Azure                 |
+| VM Size        | Standard B1s (1 vCPU, 1 GB RAM) |
+| OS             | Ubuntu 24.04 LTS                |
+| Public IP      | 135.235.139.102                 |
+| Open Ports     | 22 (SSH), 80 (HTTP)             |
+| Docker Engine  | Installed on VM                 |
 
 ### Manual Deployment (Alternative)
 
@@ -516,17 +526,17 @@ ssh -i azure-key.pem azureuser@135.235.139.102 "sudo docker logs library_web"
 
 ## Environment Variables
 
-| Variable | Description | Default | Required |
-|---|---|---|---|
-| `SECRET_KEY` | Django secret key for cryptographic signing | Auto-generated (insecure) | Yes (production) |
-| `DEBUG` | Enable Django debug mode | `False` | No |
-| `ALLOWED_HOSTS` | Comma-separated list of allowed hostnames | `localhost,127.0.0.1` | Yes (production) |
+| Variable               | Description                                      | Default                             | Required         |
+| ---------------------- | ------------------------------------------------ | ----------------------------------- | ---------------- |
+| `SECRET_KEY`           | Django secret key for cryptographic signing      | Auto-generated (insecure)           | Yes (production) |
+| `DEBUG`                | Enable Django debug mode                         | `False`                             | No               |
+| `ALLOWED_HOSTS`        | Comma-separated list of allowed hostnames        | `localhost,127.0.0.1`               | Yes (production) |
 | `CSRF_TRUSTED_ORIGINS` | Comma-separated list of trusted origins for CSRF | `http://localhost,http://127.0.0.1` | Yes (production) |
-| `DB_NAME` | PostgreSQL database name | `library_db` | Yes |
-| `DB_USER` | PostgreSQL username | `postgres` | Yes |
-| `DB_PASSWORD` | PostgreSQL password | `postgres` | Yes |
-| `DB_HOST` | Database hostname | `localhost` / `db` (Docker) | Yes |
-| `DB_PORT` | Database port | `5432` | No |
+| `DB_NAME`              | PostgreSQL database name                         | `library_db`                        | Yes              |
+| `DB_USER`              | PostgreSQL username                              | `postgres`                          | Yes              |
+| `DB_PASSWORD`          | PostgreSQL password                              | `postgres`                          | Yes              |
+| `DB_HOST`              | Database hostname                                | `localhost` / `db` (Docker)         | Yes              |
+| `DB_PORT`              | Database port                                    | `5432`                              | No               |
 
 ### Example .env File
 
@@ -562,5 +572,3 @@ DB_PORT=5432
 ## License
 
 This project is developed for educational purposes as part of the DSCC (DevOps & Software Continuous Delivery) module coursework at Westminster International University in Tashkent.
-
-
