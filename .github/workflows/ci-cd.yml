@@ -207,7 +207,8 @@ jobs:
             sudo docker load -i ~/library-app.tar
 
             echo "Stopping existing containers..."
-            cd ~ && sudo docker compose -f docker-compose.prod.yml down
+            cd ~ && sudo docker compose -f docker-compose.prod.yml down --remove-orphans || true
+            sudo docker rm -f library_web library_db library_nginx 2>/dev/null || true
 
             echo "Starting updated containers..."
             sudo docker compose -f docker-compose.prod.yml up -d --force-recreate
