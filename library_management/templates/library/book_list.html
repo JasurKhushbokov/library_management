@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="page-header">
-    <h1>📚 All Books</h1>
+    <h1>Kitoblar</h1>
     {% if user.is_superuser %}
         <a href="{% url 'book_create' %}" class="btn btn-primary">+ Add New Book</a>
     {% endif %}
