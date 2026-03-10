@@ -202,6 +202,7 @@ jobs:
         run: |
           ssh -i ~/.ssh/azure-key.pem \
             ${{ secrets.AZURE_VM_USER }}@${{ secrets.AZURE_VM_IP }} << 'EOF'
+            set -e
             echo "Loading Docker image..."
             sudo docker load -i ~/library-app.tar
 
@@ -209,7 +210,7 @@ jobs:
             cd ~ && sudo docker compose -f docker-compose.prod.yml down
 
             echo "Starting updated containers..."
-            sudo docker compose -f docker-compose.prod.yml up -d
+            sudo docker compose -f docker-compose.prod.yml up -d --force-recreate
 
             echo "Waiting for services to start..."
             sleep 10
